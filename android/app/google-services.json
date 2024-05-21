@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "945844397707",
+    "project_id": "tube-vibe-video-app",
+    "storage_bucket": "tube-vibe-video-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:945844397707:android:dfd685e9e71e249aa8168e",
+        "android_client_info": {
+          "package_name": "com.example.tube_vibe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWcSx_9E6gaXOP2OWA1fYrzGtdA8QYa4k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
