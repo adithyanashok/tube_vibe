@@ -1,13 +1,7 @@
-import 'package:chip_list/chip_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/widgets.dart';
-import 'package:responsive_grid_list/responsive_grid_list.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:timeago/timeago.dart';
 import 'package:tube_vibe/model/video_model.dart';
 import 'package:tube_vibe/provider/user_provider.dart';
 import 'package:tube_vibe/provider/video_provider.dart';

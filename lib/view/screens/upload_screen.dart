@@ -3,13 +3,11 @@ import 'dart:io';
 
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:textfield_tags/textfield_tags.dart';
 import 'package:tube_vibe/provider/video_provider.dart';
 import 'package:tube_vibe/view/core/colors.dart';
 import 'package:tube_vibe/view/core/height_and_width.dart';
-import 'package:tube_vibe/view/screens/video_screen/video_screen.dart';
 import 'package:tube_vibe/view/widgets/tag_input.dart';
 import 'package:tube_vibe/view/widgets/text_fields.dart';
 import 'package:tube_vibe/view/widgets/text_widgets.dart';

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:tube_vibe/model/user_model.dart';
 import 'package:tube_vibe/model/video_model.dart';
-import 'package:tube_vibe/provider/user_provider.dart';
 import 'package:tube_vibe/view/core/date_format.dart';
 import 'package:tube_vibe/view/core/height_and_width.dart';
 import 'package:tube_vibe/view/widgets/text_widgets.dart';

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:tube_vibe/view/core/colors.dart';
 import 'package:tube_vibe/view/widgets/text_widgets.dart';
 

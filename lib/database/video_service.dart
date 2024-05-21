@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:tube_vibe/database/user_service.dart';
-import 'package:tube_vibe/provider/user_provider.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:tube_vibe/model/video_model.dart';
 

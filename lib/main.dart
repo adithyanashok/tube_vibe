@@ -5,12 +5,7 @@ import 'package:tube_vibe/firebase_options.dart';
 import 'package:tube_vibe/provider/user_provider.dart';
 import 'package:tube_vibe/provider/video_provider.dart';
 import 'package:tube_vibe/view/core/colors.dart';
-import 'package:tube_vibe/view/screens/login_screen.dart';
-import 'package:tube_vibe/view/screens/main_screen.dart';
-import 'package:tube_vibe/view/screens/signup_screen.dart';
 import 'package:tube_vibe/view/screens/splash_screen.dart';
-import 'package:tube_vibe/view/upload.dart';
-import 'package:tube_vibe/view/video.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

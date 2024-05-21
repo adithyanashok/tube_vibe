@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tube_vibe/view/core/height_and_width.dart';
-import 'package:tube_vibe/view/screens/video_screen/video_screen.dart';
 import 'package:tube_vibe/view/widgets/text_widgets.dart';
-import 'package:tube_vibe/view/widgets/video_card.dart';
 
 class SubscriptionScreen extends StatelessWidget {
   const SubscriptionScreen({super.key});

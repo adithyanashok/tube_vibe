@@ -1,8 +1,5 @@
-import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:tube_vibe/provider/user_provider.dart';
 import 'package:tube_vibe/view/core/colors.dart';
