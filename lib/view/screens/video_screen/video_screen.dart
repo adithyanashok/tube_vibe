@@ -1,7 +1,7 @@
-
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tube_vibe/provider/comment_provider.dart';
 import 'package:tube_vibe/provider/user_provider.dart';
 import 'package:tube_vibe/provider/video_provider.dart';
 import 'package:tube_vibe/view/core/height_and_width.dart';
@@ -22,6 +22,7 @@ class VideoScreen extends StatefulWidget {
 class _VideoScreenState extends State<VideoScreen> {
   late VideoUploadProvider videoUploadProvider;
   late UserProvider userProvider;
+  late CommentProvider commentProvider;
   late FlickManager flickManager;
   @override
   void initState() {
@@ -29,6 +30,7 @@ class _VideoScreenState extends State<VideoScreen> {
     videoUploadProvider = Provider.of(context, listen: false);
     videoUploadProvider.fetchVideoById(widget.videoId);
     userProvider = Provider.of(context, listen: false);
+    commentProvider = Provider.of(context, listen: false);
 
     flickManager = FlickManager(
       videoPlayerController: VideoPlayerController.networkUrl(
@@ -41,35 +43,53 @@ class _VideoScreenState extends State<VideoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // VideoProvider Builder
     return Consumer<VideoUploadProvider>(
       builder: (context, value, child) {
+        // Extracting video from video provider
+        final video = value.video;
+        // Calling getUser function
         userProvider.getUser(value.video.channelId);
-        return value.isLoading
-            ? const CircularProgressIndicator()
-            : Scaffold(
-                body: SafeArea(
-                  child: ListView(
-                    children: [
-                      Video(flickManager: flickManager),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 20, horizontal: 10),
-                        child: Column(
-                          children: [
-                            VideoAndChannelSection(
-                              video: value.video,
-                            ),
-                            const Space(height: 15),
-                            const VideoCommentSection(),
-                            const Space(height: 20),
-                            const RelatedVideoSection(),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              );
+        commentProvider.getComments(widget.videoId);
+
+        // Loader
+        if (value.isLoading) {
+          return const CircularProgressIndicator();
+        } else {
+          return Scaffold(
+            body: SafeArea(
+              child: ListView(
+                children: [
+                  // Video Player widget
+                  Video(flickManager: flickManager),
+                  // Video Details section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 20,
+                      horizontal: 10,
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          // Video and channel details section
+                          VideoAndChannelSection(video: video),
+                          const Space(height: 15),
+                          // Comments section
+                          VideoCommentSection(
+                            video: video,
+                          ),
+                          const Space(height: 20),
+                          // Related video section
+                          const RelatedVideoSection(),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
+        }
       },
     );
   }

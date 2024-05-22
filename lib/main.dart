@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tube_vibe/firebase_options.dart';
+import 'package:tube_vibe/provider/comment_provider.dart';
 import 'package:tube_vibe/provider/user_provider.dart';
 import 'package:tube_vibe/provider/video_provider.dart';
 import 'package:tube_vibe/view/core/colors.dart';
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => VideoUploadProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => CommentProvider()),
       ],
       child: MaterialApp(
         title: 'TubeVibe',
