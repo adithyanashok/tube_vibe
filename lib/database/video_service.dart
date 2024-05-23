@@ -72,6 +72,25 @@ class VideoService {
     return videosList;
   }
 
+  Future<List<VideoModel>> fetchMyVideos(String userId) async {
+    print(userId);
+    // Empty VideoModel list
+    final List<VideoModel> videosList = [];
+    // Fetch video from db
+    final querySnapshot = await db
+        .collection('videos')
+        .where("channelId", isEqualTo: userId)
+        .get();
+
+    for (var docSnapshot in querySnapshot.docs) {
+      final videoData = docSnapshot.data();
+      log(videoData.toString());
+      final videos = VideoModel.fromMap(videoData);
+      videosList.add(videos);
+    }
+    return videosList;
+  }
+
   Future<VideoModel> fetchVideoById(String docId) async {
     final docSnapshot = await db.collection('videos').doc(docId).get();
     if (docSnapshot.exists) {

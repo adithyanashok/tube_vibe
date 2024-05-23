@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/foundation.dart';
 class CommentModel {
   final String name;
   final String profile;
+  final String? id;
   final String date;
   final String userId;
   final String videoId;
@@ -14,6 +16,7 @@ class CommentModel {
   CommentModel({
     required this.name,
     required this.profile,
+    this.id,
     required this.date,
     required this.userId,
     required this.videoId,
@@ -24,6 +27,7 @@ class CommentModel {
   CommentModel copyWith({
     String? name,
     String? profile,
+    String? id,
     String? date,
     String? userId,
     String? videoId,
@@ -33,6 +37,7 @@ class CommentModel {
     return CommentModel(
       name: name ?? this.name,
       profile: profile ?? this.profile,
+      id: id ?? this.id,
       date: date ?? this.date,
       userId: userId ?? this.userId,
       videoId: videoId ?? this.videoId,
@@ -45,6 +50,7 @@ class CommentModel {
     return <String, dynamic>{
       'name': name,
       'profile': profile,
+      'id': id,
       'date': date,
       'userId': userId,
       'videoId': videoId,
@@ -57,6 +63,7 @@ class CommentModel {
     return CommentModel(
       name: map['name'] as String,
       profile: map['profile'] as String,
+      id: map['id'] != null ? map['id'] as String : null,
       date: map['date'] as String,
       userId: map['userId'] as String,
       videoId: map['videoId'] as String,
@@ -74,7 +81,7 @@ class CommentModel {
 
   @override
   String toString() {
-    return 'CommentModel(name: $name, profile: $profile, date: $date, userId: $userId, videoId: $videoId, comment: $comment, likes: $likes)';
+    return 'CommentModel(name: $name, profile: $profile, id: $id, date: $date, userId: $userId, videoId: $videoId, comment: $comment, likes: $likes)';
   }
 
   @override
@@ -83,6 +90,7 @@ class CommentModel {
 
     return other.name == name &&
         other.profile == profile &&
+        other.id == id &&
         other.date == date &&
         other.userId == userId &&
         other.videoId == videoId &&
@@ -94,6 +102,7 @@ class CommentModel {
   int get hashCode {
     return name.hashCode ^
         profile.hashCode ^
+        id.hashCode ^
         date.hashCode ^
         userId.hashCode ^
         videoId.hashCode ^

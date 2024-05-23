@@ -23,8 +23,9 @@ class VideoAndChannelSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid;
-    final videoProvider = Provider.of<VideoUploadProvider>(context);
-    final userProvider = Provider.of<UserProvider>(context);
+    final videoProvider =
+        Provider.of<VideoUploadProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     userProvider.getUser(video.channelId);
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -119,8 +120,11 @@ class VideoAndChannelSection extends StatelessWidget {
                         InkWell(
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  ProfileScreen(userId: video.channelId),
+                              builder: (context) => ProfileScreen(
+                                userId: userId == video.channelId
+                                    ? userId
+                                    : video.channelId,
+                              ),
                             ),
                           ),
                           child: CustomText(
@@ -142,15 +146,25 @@ class VideoAndChannelSection extends StatelessWidget {
                 ),
                 userId == video.channelId
                     ? const SizedBox()
-                    : CustomElevatedButton(
-                        backgroundColor: primaryRed,
-                        text: "Subscribe",
-                        borderRadius: 8,
-                        height: 36,
-                        onTap: () {
-                          userProvider.subscribeChannel(video.channelId);
-                        },
-                      ),
+                    : Consumer<UserProvider>(builder: (context, value, child) {
+                        return CustomElevatedButton(
+                          backgroundColor:
+                              value.user.subscribers.contains(userId)
+                                  ? const Color.fromARGB(255, 44, 44, 44)
+                                  : primaryRed,
+                          text: value.user.subscribers.contains(userId)
+                              ? "Subscribed"
+                              : "Subscribe",
+                          borderRadius: 8,
+                          height: 36,
+                          onTap: () {
+                            userProvider.subscribeChannel(
+                              userId,
+                              video.channelId,
+                            );
+                          },
+                        );
+                      }),
               ],
             );
           },

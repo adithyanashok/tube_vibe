@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tube_vibe/database/comment_service.dart';
 import 'package:tube_vibe/model/comment_model.dart';
@@ -30,6 +33,42 @@ class CommentProvider with ChangeNotifier {
     } catch (e) {
       _error = "Something wen wrong...";
       notifyListeners();
+    }
+  }
+
+  // Like comment
+  Future<void> likeComment(
+      String commentId, String userId, String videoId) async {
+    log("$commentId $userId $videoId");
+
+    try {
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('comments')
+          .doc(commentId)
+          .get();
+      final db = FirebaseFirestore.instance;
+
+      if (docSnapshot.exists) {
+        // Check if user already liked the video
+        final likedByUser =
+            docSnapshot.data()!['likes']?.contains(userId) ?? false;
+
+        if (!likedByUser) {
+          // Add user to likes array
+          db.collection('comments').doc(commentId).update({
+            'likes': FieldValue.arrayUnion([userId]),
+          });
+          getComments(videoId);
+        } else {
+          // Remove user from likes array (unlike)
+          db.collection('comments').doc(commentId).update({
+            'likes': FieldValue.arrayRemove([userId]),
+          });
+          getComments(videoId);
+        }
+      }
+    } catch (e) {
+      log(e.toString());
     }
   }
 }

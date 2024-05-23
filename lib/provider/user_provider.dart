@@ -11,7 +11,7 @@ import 'package:tube_vibe/view/screens/main_screen.dart';
 
 class UserProvider with ChangeNotifier {
   UserService userService = UserService();
-  bool _isLoading = true;
+  bool _isLoading = false;
   String _error = '';
   UserModel _user = UserModel(name: '', email: '', subscribers: []);
   List _userModels = [];
@@ -136,6 +136,7 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<void> getUser(userId) async {
+    _isLoading = true;
     _user = await userService.getUser(userId);
     _isLoading = false;
     notifyListeners();
@@ -158,7 +159,7 @@ class UserProvider with ChangeNotifier {
     );
   }
 
-  Future<void> subscribeChannel(String userId) async {
+  Future<void> subscribeChannel(String currentUserId, String userId) async {
     try {
       final docSnapshot = await FirebaseFirestore.instance
           .collection('users')
@@ -168,21 +169,22 @@ class UserProvider with ChangeNotifier {
 
       if (docSnapshot.exists) {
         final subByUser =
-            docSnapshot.data()!['subscribers']?.contains(userId) ?? false;
+            docSnapshot.data()!['subscribers']?.contains(currentUserId) ??
+                false;
 
         if (!subByUser) {
           db.collection('users').doc(userId).update({
-            'subscribers': FieldValue.arrayUnion([userId]),
+            'subscribers': FieldValue.arrayUnion([currentUserId]),
           });
-          // getUser(userId);
+          getUser(userId);
         } else {
           db.collection('users').doc(userId).update({
-            'subscribers': FieldValue.arrayRemove([userId]),
+            'subscribers': FieldValue.arrayRemove([currentUserId]),
           });
-          // getUser(userId);
+          getUser(userId);
         }
       }
-      // getUser(userId);
+      // getUser(currentUserId);
     } catch (e) {
       log(e.toString());
     }

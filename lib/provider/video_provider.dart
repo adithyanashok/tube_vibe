@@ -18,10 +18,11 @@ class VideoUploadProvider with ChangeNotifier {
   final videoService = VideoService();
   final userService = UserService();
   bool _isUploading = true;
-  bool _isLoading = true;
+  bool _isLoading = false;
   bool _pickedThumbnail = false;
   bool _pickedVideo = false;
   List<VideoModel> _videos = [];
+  List<VideoModel> _myVideos = [];
   List<UserModel> _userModels = [];
 
   String? _error;
@@ -45,10 +46,13 @@ class VideoUploadProvider with ChangeNotifier {
   bool get pickedThumbnail => _pickedThumbnail;
   String? get error => _error;
   List<VideoModel> get videos => _videos;
+  List<VideoModel> get myVideos => _myVideos;
   VideoModel get video => _video;
   File? get videoFile => _videoFile;
   File? get thumbnailFile => _thumbnailFile;
   List<UserModel> get userModels => _userModels;
+
+  // Pick Video
   Future<void> pickVideo() async {
     final pickedFile = await picker.pickVideo(source: ImageSource.gallery);
 
@@ -135,8 +139,16 @@ class VideoUploadProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> fetchMyVideos(String userId) async {
+    _myVideos = await videoService.fetchMyVideos(userId);
+    _isLoading = false;
+    notifyListeners();
+  }
+
   Future<void> fetchVideoById(String docId) async {
+    _isLoading = true;
     _video = await videoService.fetchVideoById(docId);
+    _isLoading = false;
     notifyListeners();
   }
 
