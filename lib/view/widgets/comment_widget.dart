@@ -19,7 +19,6 @@ class CommentWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final commentProvider =
         Provider.of<CommentProvider>(context, listen: false);
-    print(comment);
     // Width
     final width = MediaQuery.of(context).size.width;
     final userId = FirebaseAuth.instance.currentUser?.uid;

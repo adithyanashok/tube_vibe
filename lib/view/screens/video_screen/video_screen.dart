@@ -1,3 +1,7 @@
+import 'dart:developer';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +24,7 @@ class VideoScreen extends StatefulWidget {
 }
 
 class _VideoScreenState extends State<VideoScreen> {
+  final userId = FirebaseAuth.instance.currentUser?.uid;
   late VideoUploadProvider videoUploadProvider;
   late UserProvider userProvider;
   late CommentProvider commentProvider;
@@ -29,6 +34,7 @@ class _VideoScreenState extends State<VideoScreen> {
     super.initState();
     videoUploadProvider = Provider.of(context, listen: false);
     videoUploadProvider.fetchVideoById(widget.videoId);
+    videoUploadProvider.fetchWatchlistIds(userId!);
     userProvider = Provider.of(context, listen: false);
     commentProvider = Provider.of(context, listen: false);
 
@@ -42,16 +48,27 @@ class _VideoScreenState extends State<VideoScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    log("LOG AT VIDSCREEN => DidChangeDependencies");
+  }
+
+  @override
+  void didUpdateWidget(covariant VideoScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    log("LOG AT VIDSCREEN => DidiUpdateWidget => $oldWidget");
+  }
+
+  @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      commentProvider.getComments(widget.videoId);
+    });
     // VideoProvider Builder
     return Consumer<UserProvider>(builder: (context, userValue, child) {
       return Consumer<VideoUploadProvider>(
         builder: (context, value, child) {
-          // Extracting video from video provider
-          final video = value.video;
-          // Calling getUser function
           userProvider.getUser(value.video.channelId);
-          commentProvider.getComments(widget.videoId);
 
           // Loader
           if (value.isLoading && userValue.isLoading) {
@@ -78,11 +95,11 @@ class _VideoScreenState extends State<VideoScreen> {
                               // Video and channel details section
                               const Space(height: 20),
 
-                              VideoAndChannelSection(video: video),
+                              VideoAndChannelSection(video: value.video),
                               const Space(height: 15),
                               // Comments section
                               VideoCommentSection(
-                                video: video,
+                                video: value.video,
                               ),
                               const Space(height: 20),
                               // Related video section

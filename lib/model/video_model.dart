@@ -8,7 +8,7 @@ class VideoModel {
   final String date;
   final String channelId;
   final List tags;
-  String? id;
+  String id;
 
   VideoModel({
     required this.views,
@@ -19,7 +19,7 @@ class VideoModel {
     required this.channelId,
     required this.videoThumbnail,
     required this.videoUrl,
-    this.id,
+    this.id = '',
     required this.tags,
   });
 

@@ -1,7 +1,12 @@
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flick_video_player/flick_video_player.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:tube_vibe/database/video_service.dart';
 import 'package:tube_vibe/model/video_model.dart';
 import 'package:tube_vibe/provider/user_provider.dart';
 import 'package:tube_vibe/provider/video_provider.dart';
@@ -33,40 +38,7 @@ class VideoAndChannelSection extends StatelessWidget {
       children: [
         InkWell(
           onTap: () {
-            showModalBottomSheet(
-              backgroundColor: primaryBlack,
-              isScrollControlled: true,
-              context: context,
-              builder: (context) {
-                // final tags =
-                return SizedBox(
-                  width: double.infinity,
-                  height: 600,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        VideoDetails(
-                          title: video.videoTitle,
-                          views: video.views,
-                          date: formatDateTimeAgo(video.date),
-                        ),
-                        const Space(height: 20),
-                        CustomText(
-                          text: video.description,
-                          textAlign: TextAlign.start,
-                          color: Colors.white,
-                          fontSize: 15,
-                          maxLines: 150,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            );
+            showDescription(context);
           },
           child: VideoDetails(
             title: video.videoTitle,
@@ -74,33 +46,66 @@ class VideoAndChannelSection extends StatelessWidget {
             date: '${video.likes.length} Likes',
           ),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextButton.icon(
-              onPressed: () {
-                videoProvider.likeVideo(
-                  video.id!,
-                  userId,
-                );
-              },
-              icon: video.likes.contains(userId!)
-                  ? const Icon(Icons.thumb_up_alt_rounded)
-                  : const Icon(
-                      Icons.thumb_up_alt_outlined,
-                      color: Colors.white,
-                    ),
-              label: CustomText(
-                text: "Like",
-                color: video.likes.contains(userId) ? Colors.red : Colors.white,
+        SizedBox(
+          height: 50,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              TextButton.icon(
+                onPressed: () {
+                  videoProvider.likeVideo(
+                    video.id,
+                    userId,
+                  );
+                },
+                icon: video.likes.contains(userId!)
+                    ? const Icon(Icons.thumb_up_alt_rounded)
+                    : const Icon(
+                        Icons.thumb_up_alt_outlined,
+                        color: Colors.white,
+                      ),
+                label: CustomText(
+                  text: "Like",
+                  color:
+                      video.likes.contains(userId) ? Colors.red : Colors.white,
+                ),
               ),
-            ),
-            const CustomTextButton(
-              icon: Icons.playlist_add,
-              text: "Watchlist",
-            ),
-          ],
+              TextButton.icon(
+                onPressed: () {
+                  videoProvider.addToWatchlist(userId, videoProvider.video.id);
+                },
+                icon:
+                    videoProvider.watchlistIds.contains(videoProvider.video.id)
+                        ? const Icon(Icons.playlist_add_check)
+                        : const Icon(
+                            Icons.playlist_add,
+                            color: Colors.white,
+                          ),
+                label: CustomText(
+                  text: "Watchlist",
+                  color: videoProvider.watchlistIds
+                          .contains(videoProvider.video.id)
+                      ? Colors.red
+                      : Colors.white,
+                ),
+              ),
+              video.channelId == userId
+                  ? TextButton.icon(
+                      onPressed: () {
+                        showAlert(videoProvider, userId, context);
+                      },
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                      ),
+                      label: const CustomText(
+                        text: "Delete",
+                        color: Colors.white,
+                      ),
+                    )
+                  : const SizedBox()
+            ],
+          ),
         ),
         Consumer<UserProvider>(
           builder: (context, value, child) {
@@ -172,6 +177,43 @@ class VideoAndChannelSection extends StatelessWidget {
       ],
     );
   }
+
+  Future<dynamic> showDescription(BuildContext context) {
+    return showModalBottomSheet(
+      backgroundColor: primaryBlack,
+      isScrollControlled: true,
+      context: context,
+      builder: (context) {
+        // final tags =
+        return SizedBox(
+          width: double.infinity,
+          height: 600,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                VideoDetails(
+                  title: video.videoTitle,
+                  views: video.views,
+                  date: formatDateTimeAgo(video.date),
+                ),
+                const Space(height: 20),
+                CustomText(
+                  text: video.description,
+                  textAlign: TextAlign.start,
+                  color: Colors.white,
+                  fontSize: 15,
+                  maxLines: 150,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class Video extends StatelessWidget {
@@ -190,4 +232,53 @@ class Video extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> showAlert(
+    VideoUploadProvider videoProvider, String userId, context) async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: primaryBlack,
+        surfaceTintColor: primaryBlack,
+        title: const CustomText(
+          text: 'Delete Video?',
+          color: Colors.white,
+        ),
+        content: const SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              CustomText(
+                text: 'Would you like to delete this video?',
+                color: Colors.white,
+              ),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const CustomText(
+              text: 'Cancel',
+              color: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Delete'),
+            onPressed: () async {
+              await videoProvider.deleteVideo(
+                videoProvider.video.id,
+                userId,
+                context,
+              );
+            },
+          ),
+        ],
+      );
+    },
+  );
 }

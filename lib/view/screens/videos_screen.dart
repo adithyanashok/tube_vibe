@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:tube_vibe/provider/video_provider.dart';
+import 'package:tube_vibe/view/core/date_format.dart';
+import 'package:tube_vibe/view/screens/video_screen/video_screen.dart';
 import 'package:tube_vibe/view/widgets/text_widgets.dart';
 import 'package:tube_vibe/view/widgets/video_card.dart';
 
@@ -16,14 +20,34 @@ class VideosScreen extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-      body: GridView.builder(
-        padding: const EdgeInsets.only(left: 25, top: 10),
-        gridDelegate:
-            const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-        itemBuilder: (context, index) => const SmallCard(
-          image: "assets/const.jpg",
-          title: "Constellation | Trailer | Apple TV+",
-        ),
+      body: Consumer<VideoUploadProvider>(
+        builder: (context, value, child) {
+          return GridView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2),
+            itemBuilder: (context, index) {
+              final video = value.channelVideos[index];
+              return SmallCard(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => VideoScreen(
+                        videoUrl: video.videoUrl,
+                        videoId: video.id,
+                      ),
+                    ),
+                  );
+                },
+                image: video.videoThumbnail,
+                title: video.videoTitle,
+                date: video.date,
+                views: video.views.toString(),
+              );
+            },
+            itemCount: value.channelVideos.length,
+          );
+        },
       ),
     );
   }

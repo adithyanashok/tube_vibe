@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:tube_vibe/model/user_model.dart';
 import 'package:tube_vibe/model/video_model.dart';
 import 'package:tube_vibe/view/core/date_format.dart';
@@ -29,9 +31,9 @@ class VideoCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             child: SizedBox(
               width: 370,
-              height: 170,
-              child: Image.network(
-                videoModel.videoThumbnail,
+              height: 160,
+              child: CachedNetworkImage(
+                imageUrl: videoModel.videoThumbnail,
                 fit: BoxFit.cover,
               ),
             ),
@@ -102,75 +104,110 @@ class VideoCard extends StatelessWidget {
 }
 
 class VideoHorizontalCard extends StatelessWidget {
+  final String image;
+  final String title;
+  final String date;
+  final int views;
+  final String channel;
+  final VoidCallback onTap;
+  final bool? playing;
   const VideoHorizontalCard({
     super.key,
+    required this.image,
+    required this.title,
+    required this.date,
+    required this.views,
+    required this.channel,
+    required this.onTap,
+    this.playing = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 100,
-          height: 100,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(5),
-            child: Image.asset(
-              'assets/shogun.jpg',
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-        const Space(width: 10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: MediaQuery.of(context).size.width - 155,
-              child: const CustomText(
-                text:
-                    "Shōgun - Official Trailer | Hiroyuki Sanada, Cosmo Jarvis, Anna Sawai | FX ",
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                maxLines: 2,
+    return InkWell(
+      onTap: () => onTap(),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            children: [
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: Image.network(
+                    image,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-            ),
-            const Space(height: 3),
-            const CustomText(
-              text: "Jk Channel",
-              color: Colors.grey,
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-            ),
-            const Row(
-              children: [
-                CustomText(
-                  text: "100K views",
-                  color: Colors.grey,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
+              playing == true
+                  ? Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      width: 100,
+                      height: 100,
+                      child: const Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 40,
+                      ),
+                    )
+                  : const SizedBox()
+            ],
+          ),
+          const Space(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width - 155,
+                child: CustomText(
+                  text: title,
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  maxLines: 2,
                 ),
-                Space(width: 3),
-                Icon(
-                  Icons.circle,
-                  size: 6,
-                  color: Colors.grey,
-                ),
-                Space(width: 3),
-                CustomText(
-                  text: "10 hours ago",
-                  color: Colors.grey,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                ),
-              ],
-            )
-          ],
-        )
-      ],
+              ),
+              const Space(height: 3),
+              CustomText(
+                text: channel,
+                color: Colors.grey,
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+              ),
+              Row(
+                children: [
+                  CustomText(
+                    text: "$views views",
+                    color: Colors.grey,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  const Space(width: 3),
+                  const Icon(
+                    Icons.circle,
+                    size: 6,
+                    color: Colors.grey,
+                  ),
+                  const Space(width: 3),
+                  CustomText(
+                    text: formatDateTimeAgo(date),
+                    color: Colors.grey,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ],
+              )
+            ],
+          )
+        ],
+      ),
     );
   }
 }
@@ -178,72 +215,75 @@ class VideoHorizontalCard extends StatelessWidget {
 class SmallCard extends StatelessWidget {
   final String image;
   final String title;
-  final String? views;
-  final String? date;
+  final String views;
+  final String date;
+  final VoidCallback onTap;
   const SmallCard({
     super.key,
     required this.image,
     required this.title,
-    this.views,
-    this.date,
+    required this.views,
+    required this.date,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 170,
-          height: 100,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              image,
-              fit: BoxFit.cover,
+    return InkWell(
+      onTap: () => onTap(),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 160,
+            height: 90,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                image,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-        ),
-        const Space(height: 6),
-        SizedBox(
-          width: 170,
-          child: CustomText(
-            text: title,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-            maxLines: 2,
+          const Space(height: 6),
+          SizedBox(
+            width: 160,
+            child: CustomText(
+              text: title,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              maxLines: 2,
+            ),
           ),
-        ),
-        views != null
-            ? Row(
-                children: [
-                  CustomText(
-                    text: views ?? '',
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 12,
-                    maxLines: 2,
-                  ),
-                  const Space(width: 5),
-                  const Icon(
-                    Icons.circle,
-                    size: 7,
-                    color: Colors.grey,
-                  ),
-                  const Space(width: 5),
-                  CustomText(
-                    text: date ?? '',
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 12,
-                    maxLines: 2,
-                  ),
-                ],
-              )
-            : const Space()
-      ],
+          Row(
+            children: [
+              CustomText(
+                text: "$views views",
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+                maxLines: 2,
+              ),
+              const Space(width: 5),
+              const Icon(
+                Icons.circle,
+                size: 7,
+                color: Colors.grey,
+              ),
+              const Space(width: 5),
+              CustomText(
+                text: formatDateTimeAgo(date),
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+                maxLines: 2,
+              ),
+            ],
+          )
+        ],
+      ),
     );
   }
 }

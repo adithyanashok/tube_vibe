@@ -58,18 +58,19 @@ class _StringMultilineTagsState extends State<StringMultilineTags> {
                   ),
                   enabledBorder: const OutlineInputBorder(
                     borderSide: BorderSide(
-                      color: Colors.white,
-                      width: 1.0,
+                      color: Color.fromARGB(255, 68, 68, 68),
                     ),
                   ),
                   focusedBorder: const OutlineInputBorder(
                     borderSide: BorderSide(
-                      color: Colors.white,
-                      width: 1.0,
+                      color: Color.fromARGB(255, 68, 68, 68),
                     ),
                   ),
                   hintStyle: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.normal),
+                    color: Color.fromARGB(255, 112, 112, 112),
+                    fontWeight: FontWeight.w400,
+                    fontSize: 13,
+                  ),
                   hintText:
                       inputFieldValues.tags.isNotEmpty ? '' : "Enter tag...",
                   errorText: inputFieldValues.error,

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tube_vibe/provider/video_provider.dart';
@@ -13,39 +12,52 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Provider.of<VideoUploadProvider>(context, listen: false).fetchVideos();
-    return Scaffold(
-        appBar: AppBar(
-          title: const LogoText(),
-        ),
-        body: Consumer<VideoUploadProvider>(
-          builder: (context, value, child) {
-            return value.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.separated(
-                    padding: const EdgeInsets.all(10),
-                    itemBuilder: (context, index) {
-                      final video = value.videos[index];
 
-                      return VideoCard(
-                        videoModel: video,
-                        userModel: value.userModels[index],
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => VideoScreen(
-                                videoUrl: video.videoUrl,
-                                videoId: video.id!,
-                              ),
-                            ),
-                          );
-                        },
+    return Scaffold(
+      appBar: AppBar(
+        title: const LogoText(),
+      ),
+      body: Consumer<VideoUploadProvider>(
+        builder: (context, value, child) {
+          if (value.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            return RefreshIndicator(
+              onRefresh: () async {
+                await Provider.of<VideoUploadProvider>(context, listen: false)
+                    .fetchVideos();
+
+                value.videos.shuffle();
+              },
+              child: ListView.separated(
+                itemCount: value.videos.length,
+                padding: const EdgeInsets.all(10),
+                itemBuilder: (context, index) {
+                  final video = value.videos[index];
+
+                  return VideoCard(
+                    videoModel: video,
+                    userModel: value.userModels[index],
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => VideoScreen(
+                            videoUrl: video.videoUrl,
+                            videoId: video.id,
+                          ),
+                        ),
                       );
                     },
-                    separatorBuilder: (context, index) =>
-                        const Space(height: 20),
-                    itemCount: value.videos.length,
                   );
-          },
-        ));
+                },
+                separatorBuilder: (context, index) {
+                  return const Space(height: 20);
+                },
+              ),
+            );
+          }
+        },
+      ),
+    );
   }
 }

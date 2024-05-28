@@ -25,7 +25,10 @@ class VideoCommentSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextEditingController controller = TextEditingController();
-    final commentProvider = Provider.of<CommentProvider>(context);
+    final commentProvider = Provider.of<CommentProvider>(
+      context,
+      listen: false,
+    );
     final user = FirebaseAuth.instance.currentUser;
 
     return Container(
@@ -96,7 +99,7 @@ class VideoCommentSection extends StatelessWidget {
                                       date: DateTime.now().toIso8601String(),
                                       likes: [],
                                       userId: "${user?.uid}",
-                                      videoId: video.id!,
+                                      videoId: video.id,
                                       comment: controller.text,
                                     ),
                                   );
@@ -112,8 +115,19 @@ class VideoCommentSection extends StatelessWidget {
                                   itemCount: value.comment.length,
                                   itemBuilder: (context, index) {
                                     final comment = value.comment[index];
-                                    return CommentWidget(
-                                      comment: comment,
+                                    return InkWell(
+                                      onLongPress: () {
+                                        if (comment.userId == user?.uid) {
+                                          deleteAlert(
+                                            context,
+                                            commentProvider,
+                                            comment,
+                                          );
+                                        }
+                                      },
+                                      child: CommentWidget(
+                                        comment: comment,
+                                      ),
                                     );
                                   },
                                   separatorBuilder: (context, index) =>
@@ -144,6 +158,52 @@ class VideoCommentSection extends StatelessWidget {
           )
         ],
       ),
+    );
+  }
+
+  Future<void> deleteAlert(BuildContext context,
+      CommentProvider commentProvider, CommentModel comment) {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: primaryBlack,
+          surfaceTintColor: primaryBlack,
+          title: const CustomText(
+            text: 'Delete Comment?',
+            color: Colors.white,
+          ),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                CustomText(
+                  text: 'Would you like to delete this comment?',
+                  color: Colors.white,
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const CustomText(
+                text: 'Cancel',
+                color: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () async {
+                await commentProvider.deleteComment(comment.id!, video.id);
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

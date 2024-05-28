@@ -1,6 +1,8 @@
 // video_upload_provider.dart
 
 import 'dart:developer';
+
+import '';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,13 +19,23 @@ class VideoUploadProvider with ChangeNotifier {
   final picker = ImagePicker();
   final videoService = VideoService();
   final userService = UserService();
-  bool _isUploading = true;
+  // Boolean Values
+  bool _isUploading = false;
   bool _isLoading = false;
   bool _pickedThumbnail = false;
   bool _pickedVideo = false;
+  // Videos Lists
   List<VideoModel> _videos = [];
-  List<VideoModel> _myVideos = [];
+  List<VideoModel> _channelVideos = [];
+  List<VideoModel> _watchListVideos = [];
+  List<VideoModel> _searchList = [];
+  List<VideoModel> _subscribedVideos = [];
+  List<VideoModel> _relatedVideos = [];
+  // Users Lists
   List<UserModel> _userModels = [];
+  List<UserModel> _subscribedUsers = [];
+  // String Lists
+  List<String> _watchlistIds = [];
 
   String? _error;
   File? _videoFile;
@@ -40,17 +52,27 @@ class VideoUploadProvider with ChangeNotifier {
     tags: [],
   );
   // Getter
+  // Boolean Values
   bool get isUploading => _isUploading;
   bool get isLoading => _isLoading;
   bool get pickedVideo => _pickedVideo;
   bool get pickedThumbnail => _pickedThumbnail;
   String? get error => _error;
+  // Video Lists
   List<VideoModel> get videos => _videos;
-  List<VideoModel> get myVideos => _myVideos;
+  List<VideoModel> get channelVideos => _channelVideos;
+  List<VideoModel> get searchList => _searchList;
+  List<VideoModel> get subscribedVideos => _subscribedVideos;
+  List<VideoModel> get relatedVideos => _relatedVideos;
+  List<VideoModel> get watchListVideos => _watchListVideos;
+  List<String> get watchlistIds => _watchlistIds;
   VideoModel get video => _video;
+  // Files
   File? get videoFile => _videoFile;
   File? get thumbnailFile => _thumbnailFile;
+  // Users Lists
   List<UserModel> get userModels => _userModels;
+  List<UserModel> get subscribedUsers => _subscribedUsers;
 
   // Pick Video
   Future<void> pickVideo() async {
@@ -101,6 +123,9 @@ class VideoUploadProvider with ChangeNotifier {
       String thumbnailUrl =
           await videoService.uploadFile(compressedThumbnail, thumbnailFileName);
 
+      final titleArray = videoTitle.split(' ');
+      final tagsAndTitle = tags + titleArray;
+
       // Save metadata to Firestore
       VideoModel videoModel = VideoModel(
         videoTitle: videoTitle,
@@ -111,9 +136,11 @@ class VideoUploadProvider with ChangeNotifier {
         videoUrl: videoUrl,
         date: DateTime.now().toIso8601String(),
         channelId: "${FirebaseAuth.instance.currentUser?.uid}",
-        tags: tags,
+        tags: tagsAndTitle,
       );
-
+      _pickedThumbnail = false;
+      _pickedVideo = false;
+      notifyListeners();
       final uploadedVideo = await videoService.saveVideoMetadata(videoModel);
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
@@ -123,6 +150,8 @@ class VideoUploadProvider with ChangeNotifier {
           ),
         ),
       );
+      _isUploading = false;
+      notifyListeners();
     } catch (e) {
       _error = "Something wen wrong...";
       notifyListeners();
@@ -133,14 +162,17 @@ class VideoUploadProvider with ChangeNotifier {
   }
 
   Future<void> fetchVideos() async {
+    _isLoading = true;
+
     _videos = await videoService.fetchVideos();
+
     _userModels = await userService.getUsersName(_videos);
     _isLoading = false;
     notifyListeners();
   }
 
   Future<void> fetchMyVideos(String userId) async {
-    _myVideos = await videoService.fetchMyVideos(userId);
+    _channelVideos = await videoService.fetchMyVideos(userId);
     _isLoading = false;
     notifyListeners();
   }
@@ -148,13 +180,12 @@ class VideoUploadProvider with ChangeNotifier {
   Future<void> fetchVideoById(String docId) async {
     _isLoading = true;
     _video = await videoService.fetchVideoById(docId);
+    _relatedVideos = await videoService.getRelatedVideos(_video.tags);
     _isLoading = false;
     notifyListeners();
   }
 
   Future<void> likeVideo(String videoId, String userId) async {
-    log("$videoId $userId");
-
     try {
       final docSnapshot = await FirebaseFirestore.instance
           .collection('videos')
@@ -172,17 +203,64 @@ class VideoUploadProvider with ChangeNotifier {
           db.collection('videos').doc(videoId).update({
             'likes': FieldValue.arrayUnion([userId]),
           });
-          fetchVideoById(videoId);
+          // fetchVideoById(videoId);
+          _video.likes.add(userId);
+          notifyListeners();
         } else {
           // Remove user from likes array (unlike)
           db.collection('videos').doc(videoId).update({
             'likes': FieldValue.arrayRemove([userId]),
           });
-          fetchVideoById(videoId);
+          // fetchVideoById(videoId);
+          _video.likes.remove(userId);
+          notifyListeners();
         }
       }
     } catch (e) {
-      log(e.toString());
+      debugPrint(e.toString());
     }
+  }
+
+  Future<void> searchVideos(String query) async {
+    _searchList = await videoService.searchVideos(query);
+    _userModels = await userService.getUsersName(_searchList);
+    notifyListeners();
+  }
+
+  Future<void> getSubscribedVideos(String userId) async {
+    _isLoading = true;
+    final videos = await videoService.getSubscribedVideos(userId);
+    _subscribedVideos = videos[0];
+    _subscribedUsers = videos[1];
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> fetchWatchListVideos(String userId) async {
+    _isLoading = true;
+    _watchListVideos = await videoService.fetchWatchlistVideos(userId);
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> addToWatchlist(String userId, String videoId) async {
+    _watchlistIds.add(videoId);
+    await videoService.addToWatchlist(userId, videoId);
+    await fetchWatchlistIds(userId);
+    notifyListeners();
+  }
+
+  Future<void> fetchWatchlistIds(String userId) async {
+    _watchlistIds = await videoService.fetchWatchlistIds(userId);
+    notifyListeners();
+  }
+
+  Future<void> deleteVideo(String docId, String userId, context) async {
+    await videoService.deleteVideo(docId, userId, context);
+    notifyListeners();
+  }
+
+  Future<void> clearSearchList() async {
+    _searchList = [];
   }
 }

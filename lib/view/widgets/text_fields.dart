@@ -4,25 +4,30 @@ import 'package:tube_vibe/view/core/colors.dart';
 class CustomTextField extends StatelessWidget {
   final String label;
   final IconData? icon;
-  final TextEditingController controller;
+  final TextEditingController? controller;
   final bool obscureText;
-
+  final String? initialValue;
+  final Function(String value)? onSubmitted;
   const CustomTextField({
     super.key,
     required this.label,
     this.icon,
-    required this.controller,
+    this.controller,
     this.obscureText = false,
+    this.initialValue,
+    this.onSubmitted,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
+      initialValue: initialValue,
       controller: controller,
       obscureText: obscureText,
       style: const TextStyle(
         color: Colors.white,
       ),
+      onFieldSubmitted: (value) => onSubmitted!(value),
       cursorColor: primaryRed,
       decoration: InputDecoration(
         isDense: true,
@@ -76,18 +81,18 @@ class _CustomTextSpaceState extends State<CustomTextSpace> {
         isDense: true,
         labelText: widget.label,
         labelStyle: const TextStyle(
-          color: Colors.white,
+          color: Color.fromARGB(255, 112, 112, 112),
           fontWeight: FontWeight.w400,
-          fontSize: 15,
+          fontSize: 13,
         ),
         enabledBorder: const OutlineInputBorder(
           borderSide: BorderSide(
-            color: Colors.white,
+            color: Color.fromARGB(255, 68, 68, 68),
           ),
         ),
         focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(
-            color: Colors.white,
+            color: Color.fromARGB(255, 68, 68, 68),
           ),
         ),
       ),

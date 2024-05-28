@@ -1,4 +1,10 @@
 import 'dart:developer';
+
+import 'package:flutter/material.dart';
+import 'package:tube_vibe/model/user_model.dart';
+import 'package:tube_vibe/view/screens/main_screen.dart';
+
+import '';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -65,7 +71,6 @@ class VideoService {
 
     for (var docSnapshot in querySnapshot.docs) {
       final videoData = docSnapshot.data();
-      log(videoData.toString());
       final videos = VideoModel.fromMap(videoData);
       videosList.add(videos);
     }
@@ -73,7 +78,6 @@ class VideoService {
   }
 
   Future<List<VideoModel>> fetchMyVideos(String userId) async {
-    print(userId);
     // Empty VideoModel list
     final List<VideoModel> videosList = [];
     // Fetch video from db
@@ -84,7 +88,6 @@ class VideoService {
 
     for (var docSnapshot in querySnapshot.docs) {
       final videoData = docSnapshot.data();
-      log(videoData.toString());
       final videos = VideoModel.fromMap(videoData);
       videosList.add(videos);
     }
@@ -110,29 +113,183 @@ class VideoService {
     }
   }
 
-  Future<void> likeVideo(String videoId, String userId) async {
-    final docRef = FirebaseFirestore.instance.collection('videos').doc(videoId);
-    final transaction =
-        await FirebaseFirestore.instance.runTransaction((transaction) async {
-      final docSnapshot = await transaction.get(docRef);
+  // Search Videos
+  Future<List<VideoModel>> searchVideos(String query) async {
+    // Empty VideoModel list
+    final List<VideoModel> videosList = [];
+    log("vid serv log: $query");
+
+    // Fetch video from db
+    final results = await FirebaseFirestore.instance.collection('videos').get();
+
+    final querySnapshot = results.docs
+        .where((doc) {
+          return (doc.data()['tags'].toString().toLowerCase())
+              .contains(query.toLowerCase());
+        })
+        .map((doc) => doc.data())
+        .toList();
+    for (var docSnapshot in querySnapshot) {
+      final videos = VideoModel.fromMap(docSnapshot);
+      videosList.add(videos);
+    }
+    return videosList;
+  }
+
+  // Fetch Related Videos
+  Future<List<VideoModel>> getRelatedVideos(List queries) async {
+    // Empty VideoModel list
+    final List<VideoModel> videosList = [];
+    // Fetch video from db
+    final results = await FirebaseFirestore.instance.collection('videos').get();
+    final querySnapshot = results.docs
+        .where((doc) {
+          final tags = (doc.data()['tags'] as List<dynamic>)
+              .map((tag) => tag.toString().toLowerCase())
+              .toList();
+          for (String query in queries) {
+            if (tags.any((tag) => tag.contains(query.toLowerCase()))) {
+              return true;
+            }
+          }
+          return false;
+        })
+        .map((doc) => doc.data())
+        .toList();
+    for (var docSnapshot in querySnapshot) {
+      final videos = VideoModel.fromMap(docSnapshot);
+      videosList.add(videos);
+    }
+    return videosList;
+  }
+
+  Future<List> getSubscribedVideos(String userId) async {
+    // Empty VideoModel list
+    final List<VideoModel> videosList = [];
+    final List<String> usersIdLists = [];
+    final List<UserModel> usersLists = [];
+
+    //Fetch users
+    final querySnapshot = await db
+        .collection('users')
+        .where("subscribers", arrayContains: userId)
+        .get();
+
+    for (var docSnapshot in querySnapshot.docs) {
+      final userData = docSnapshot.data();
+
+      final users = UserModel.fromMap(userData);
+      usersLists.add(users);
+      usersIdLists.add(users.id!);
+    }
+
+    for (var index in usersIdLists) {
+      // Fetch video from db
+      final querySnapshotVideos = await db
+          .collection('videos')
+          .where("channelId", isEqualTo: index)
+          .get();
+
+      for (var docSnapshot in querySnapshotVideos.docs) {
+        final videoData = docSnapshot.data();
+        final videos = VideoModel.fromMap(videoData);
+        videosList.add(videos);
+      }
+    }
+    return [videosList, usersLists];
+  }
+
+  Future<void> addToWatchlist(String userId, String videoId) async {
+    final DocumentReference docRef =
+        FirebaseFirestore.instance.collection('watchlists').doc(userId);
+
+    try {
+      DocumentSnapshot docSnapshot = await docRef.get();
 
       if (docSnapshot.exists) {
-        // Check if user already liked the video
-        final likedByUser =
-            docSnapshot.data()!['likes']?.contains(userId) ?? false;
+        // If the document exists, update it
+        List<dynamic> existingVideoIds = docSnapshot.get('videoIds');
 
-        if (!likedByUser) {
-          // Add user to likes array
-          transaction.update(docRef, {
-            'likes': FieldValue.arrayUnion([userId]),
-          });
+        if (existingVideoIds.contains(videoId)) {
+          // If videoId exists, remove it
+          existingVideoIds.remove(videoId);
         } else {
-          // Remove user from likes array (unlike)
-          transaction.update(docRef, {
-            'likes': FieldValue.arrayRemove([userId]),
-          });
+          // If videoId does not exist, add it
+          existingVideoIds.add(videoId);
+        }
+
+        await docRef.update({'videoIds': existingVideoIds});
+      } else {
+        // If the document does not exist, create it with the videoId
+        await docRef.set({
+          'videoIds': [videoId]
+        });
+      }
+    } catch (e) {
+      debugPrint("Error updating watchlist: $e");
+    }
+  }
+
+  Future<List<String>> fetchWatchlistIds(String userId) async {
+    final DocumentReference watchlistRef =
+        FirebaseFirestore.instance.collection('watchlists').doc(userId);
+    List<String> videoIds = [];
+
+    try {
+      DocumentSnapshot watchlistSnapshot = await watchlistRef.get();
+
+      if (watchlistSnapshot.exists) {
+        videoIds = List<String>.from(watchlistSnapshot.get('videoIds'));
+      }
+    } catch (e) {
+      debugPrint("Error fetching watchlist: $e");
+    }
+
+    return videoIds;
+  }
+
+  Future<List<VideoModel>> fetchWatchlistVideos(String userId) async {
+    final DocumentReference watchlistRef =
+        FirebaseFirestore.instance.collection('watchlists').doc(userId);
+    List<VideoModel> videos = [];
+
+    try {
+      DocumentSnapshot watchlistSnapshot = await watchlistRef.get();
+
+      if (watchlistSnapshot.exists) {
+        List<dynamic> videoIds = watchlistSnapshot.get('videoIds');
+
+        if (videoIds.isNotEmpty) {
+          QuerySnapshot videoSnapshots = await FirebaseFirestore.instance
+              .collection('videos')
+              .where(FieldPath.documentId, whereIn: videoIds)
+              .get();
+
+          for (var video in videoSnapshots.docs) {
+            final videoData = video.data();
+            final videoModel =
+                VideoModel.fromMap(videoData as Map<String, dynamic>);
+            videos.add(videoModel);
+            debugPrint(videos.toString());
+          }
         }
       }
-    });
+    } catch (e) {
+      debugPrint("Error fetching watchlist videos: $e");
+    }
+    return videos;
+  }
+
+  Future<void> deleteVideo(String docId, String userId, context) async {
+    try {
+      await db.collection('videos').doc(docId).delete();
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const MainScreen(),
+        ),
+      );
+    } catch (e) {
+      debugPrint("Error fetching watchlist videos: $e");
+    }
   }
 }

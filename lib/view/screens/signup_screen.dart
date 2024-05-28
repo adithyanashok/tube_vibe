@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:tube_vibe/model/user_model.dart';
 import 'package:tube_vibe/provider/user_provider.dart';
 import 'package:tube_vibe/view/core/colors.dart';
+import 'package:tube_vibe/view/screens/login_screen.dart';
 import 'package:tube_vibe/view/widgets/logo.dart';
 import 'package:tube_vibe/view/widgets/text_fields.dart';
 import 'package:tube_vibe/view/widgets/text_widgets.dart';
@@ -64,9 +65,9 @@ class SignupButton extends StatelessWidget {
         ),
         const SizedBox(height: 40),
         GestureDetector(
-          onTap: () => Navigator.of(context).push(
+          onTap: () => Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => SignupScreen(),
+              builder: (context) => LoginScreen(),
             ),
           ),
           child: const CustomRichText(

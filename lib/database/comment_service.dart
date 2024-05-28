@@ -6,7 +6,10 @@ class CommentService {
   final db = FirebaseFirestore.instance;
   Future<void> saveComment(CommentModel comment) async {
     // Saving to firestore
-    await db.collection('comments').add(comment.toMap());
+    final newComment = await db.collection('comments').add(comment.toMap());
+    await db.collection('comments').doc(newComment.id).update({
+      "id": newComment.id,
+    });
   }
 
   Future<List<CommentModel>> getComments(String videoId) async {
@@ -24,5 +27,10 @@ class CommentService {
       videosList.add(videos);
     }
     return videosList;
+  }
+
+  Future<void> deleteComment(String commentId) async {
+    // Fetch video from db
+    await db.collection('comments').doc(commentId).delete();
   }
 }

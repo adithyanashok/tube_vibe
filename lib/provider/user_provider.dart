@@ -1,4 +1,9 @@
-import 'dart:developer';
+import 'dart:io';
+
+import 'package:image_picker/image_picker.dart';
+import 'package:tube_vibe/database/video_service.dart';
+
+import '';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,16 +16,22 @@ import 'package:tube_vibe/view/screens/main_screen.dart';
 
 class UserProvider with ChangeNotifier {
   UserService userService = UserService();
+  VideoService videoService = VideoService();
+  final picker = ImagePicker();
+
   bool _isLoading = false;
   String _error = '';
   UserModel _user = UserModel(name: '', email: '', subscribers: []);
   List _userModels = [];
+  bool _pickedprofile = false;
+  File? _profileFile;
 
   bool get isLoading => _isLoading;
   String get error => _error;
   UserModel get user => _user;
   List get userModels => _userModels;
-
+  bool get pickedprofile => _pickedprofile;
+  File? get profileFile => _profileFile;
   // Signup
   Future<void> signup(UserModel user, String password, context) async {
     _isLoading = true;
@@ -105,10 +116,10 @@ class UserProvider with ChangeNotifier {
         // Show a snackbar indicating that the user was not found
         // snackBar(context: context, msg: "User not found");
       }
-
-      // Navigate to the MainPage on successful login
-      _isLoading = true;
+      _error = '';
+      _isLoading = false;
       notifyListeners();
+      // Navigate to the MainPage on successful login
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const MainScreen(),
@@ -136,9 +147,7 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<void> getUser(userId) async {
-    _isLoading = true;
     _user = await userService.getUser(userId);
-    _isLoading = false;
     notifyListeners();
   }
 
@@ -186,7 +195,41 @@ class UserProvider with ChangeNotifier {
       }
       // getUser(currentUserId);
     } catch (e) {
-      log(e.toString());
+      debugPrint(e.toString());
     }
   }
+
+  Future<void> updateName(String userId, String newName) async {
+    await userService.updateName(userId, newName);
+    await getUser(userId);
+    notifyListeners();
+  }
+
+  Future<void> updateProfile(userId) async {
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      File imageFile = File(pickedFile.path);
+      String profileFileName =
+          'profile/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      String profileUrl =
+          await videoService.uploadFile(imageFile, profileFileName);
+
+      await userService.updateProfilePic(userId, profileUrl);
+      getUser(userId);
+      _pickedprofile = true;
+      notifyListeners();
+    }
+  }
+
+  // Future<void> updateProfilePic(String userId) async {
+  //   String profileFileName =
+  //       'profile/${DateTime.now().millisecondsSinceEpoch}.jpg';
+  //   String profileUrl =
+  //       await videoService.uploadFile(profileFile!, profileFileName);
+
+  //   await userService.updateProfilePic(userId, profileUrl);
+  //   getUser(userId);
+  //   notifyListeners();
+  // }
 }

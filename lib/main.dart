@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,7 +9,11 @@ import 'package:tube_vibe/provider/comment_provider.dart';
 import 'package:tube_vibe/provider/user_provider.dart';
 import 'package:tube_vibe/provider/video_provider.dart';
 import 'package:tube_vibe/view/core/colors.dart';
+import 'package:tube_vibe/view/screens/main_screen.dart';
 import 'package:tube_vibe/view/screens/splash_screen.dart';
+import 'package:tube_vibe/view/screens/watch_list_screen.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:tube_vibe/view/widgets/text_widgets.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +44,9 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
         ),
         debugShowCheckedModeBanner: false,
+        routes: {
+          "watch-list": (context) => const WatchListScreen(),
+        },
         home: const SplashScreen(),
       ),
     );

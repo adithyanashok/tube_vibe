@@ -1,4 +1,4 @@
-import 'dart:developer';
+import '';
 import 'dart:io';
 
 import 'package:flick_video_player/flick_video_player.dart';
@@ -51,7 +51,6 @@ class _UploadScreenState extends State<UploadScreen> {
         Provider.of<VideoUploadProvider>(context, listen: false);
     return Consumer<VideoUploadProvider>(
       builder: (context, value, child) {
-        log(value.runtimeType.toString());
         return Scaffold(
           appBar: AppBar(
             title: const CustomText(
@@ -65,12 +64,12 @@ class _UploadScreenState extends State<UploadScreen> {
               ListView(
                 padding: const EdgeInsets.all(10),
                 children: [
-                  Row(
+                  Column(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       SizedBox(
-                        width: 180,
-                        height: 100,
+                        // width: 200,
+                        height: 120,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(3),
                           child: Image.file(
@@ -79,30 +78,31 @@ class _UploadScreenState extends State<UploadScreen> {
                           ),
                         ),
                       ),
+                      const Space(height: 40),
                       SizedBox(
-                        width: 180,
-                        height: 100,
+                        // width: 180,
+                        height: 140,
                         child: FlickVideoPlayer(
                           flickManager: flickManager,
                         ),
                       ),
                     ],
                   ),
-                  const Space(height: 50),
+                  const Space(height: 40),
                   CustomTextField(
                     controller: titleController,
                     label: "Title",
                   ),
-                  const Space(height: 30),
+                  const Space(height: 20),
                   CustomTextSpace(
                     label: "Description",
                     controller: descController,
                   ),
-                  const Space(height: 30),
+                  const Space(height: 20),
                   StringMultilineTags(
                     stringTagController: stringTagController,
                   ),
-                  const Space(height: 50),
+                  const Space(height: 20),
                   InkWell(
                     onTap: () {
                       upload(

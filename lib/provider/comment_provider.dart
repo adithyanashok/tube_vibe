@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import '';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tube_vibe/database/comment_service.dart';
@@ -39,8 +41,6 @@ class CommentProvider with ChangeNotifier {
   // Like comment
   Future<void> likeComment(
       String commentId, String userId, String videoId) async {
-    log("$commentId $userId $videoId");
-
     try {
       final docSnapshot = await FirebaseFirestore.instance
           .collection('comments')
@@ -49,6 +49,7 @@ class CommentProvider with ChangeNotifier {
       final db = FirebaseFirestore.instance;
 
       if (docSnapshot.exists) {
+        log("message+++++++++++++++++++++++++++++++++++++");
         // Check if user already liked the video
         final likedByUser =
             docSnapshot.data()!['likes']?.contains(userId) ?? false;
@@ -68,7 +69,19 @@ class CommentProvider with ChangeNotifier {
         }
       }
     } catch (e) {
-      log(e.toString());
+      debugPrint(e.toString());
+    }
+  }
+
+  // Get comments of a video
+  Future<void> deleteComment(String commentId, String videoId) async {
+    try {
+      await commentService.deleteComment(commentId);
+      await getComments(videoId);
+      notifyListeners();
+    } catch (e) {
+      _error = "Something wen wrong...";
+      notifyListeners();
     }
   }
 }
