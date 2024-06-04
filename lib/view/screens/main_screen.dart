@@ -1,18 +1,17 @@
-// main_screen.dart
-
 import 'dart:async';
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tube_vibe/provider/user_provider.dart';
 import 'package:tube_vibe/provider/video_provider.dart';
 import 'package:tube_vibe/view/core/colors.dart';
-import 'package:tube_vibe/view/screens/home_screen.dart';
-import 'package:tube_vibe/view/screens/profile_screen.dart';
-import 'package:tube_vibe/view/screens/search_screen.dart';
-import 'package:tube_vibe/view/screens/subscription_screen.dart';
-import 'package:tube_vibe/view/screens/upload_screen.dart';
+import 'package:tube_vibe/view/screens/home/home_screen.dart';
+import 'package:tube_vibe/view/screens/profile/profile_screen.dart';
+import 'package:tube_vibe/view/screens/search/search_screen.dart';
+import 'package:tube_vibe/view/screens/subscription/subscription_screen.dart';
+import 'package:tube_vibe/view/screens/upload/upload_screen.dart';
 import 'package:tube_vibe/view/widgets/button_widgets.dart';
 import 'package:tube_vibe/view/widgets/text_widgets.dart';
 
@@ -24,6 +23,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  final userId = FirebaseAuth.instance.currentUser?.uid;
   final List<Widget> _screens = [
     const HomeScreen(),
     const SearchScreen(),
@@ -61,11 +61,15 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.read<UserProvider>().getUser(userId);
+    context.read<VideoUploadProvider>().fetchMyVideos(userId!);
     final videoUploadProvider =
         Provider.of<VideoUploadProvider>(context, listen: false);
 
+    // Clear the search list whenever MainScreen is built
     videoUploadProvider.clearSearchList();
 
+    // Check for internet connectivity and show appropriate screen
     return _connectivityResult == ConnectivityResult.none
         ? const NoInternet()
         : Scaffold(
@@ -103,7 +107,9 @@ class _MainScreenState extends State<MainScreen> {
               notchSmoothness: NotchSmoothness.softEdge,
               leftCornerRadius: 20,
               rightCornerRadius: 20,
-              onTap: (index) => setState(() => _bottomNavIndex = index),
+              onTap: (index) => setState(() {
+                _bottomNavIndex = index;
+              }),
             ),
           );
   }
@@ -125,6 +131,7 @@ class _MainScreenState extends State<MainScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Button to pick thumbnail
                     TextButton.icon(
                       onPressed: () {
                         videoUploadProvider.pickThumbnail();
@@ -140,6 +147,7 @@ class _MainScreenState extends State<MainScreen> {
                         color: Colors.white,
                       ),
                     ),
+                    // Button to pick video
                     TextButton.icon(
                       onPressed: () {
                         videoUploadProvider.pickVideo();
@@ -154,9 +162,10 @@ class _MainScreenState extends State<MainScreen> {
                         text: "Video",
                         color: Colors.white,
                       ),
-                    )
+                    ),
                   ],
                 ),
+                // Button to continue to upload screen
                 CustomElevatedButton(
                   backgroundColor: value.pickedThumbnail && value.pickedVideo
                       ? primaryRed
@@ -199,6 +208,7 @@ class NoInternet extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Image indicating no internet connection
             SizedBox(
               width: 300,
               height: 300,
@@ -211,7 +221,7 @@ class NoInternet extends StatelessWidget {
               text: "No Connection!",
               color: Colors.white,
               fontSize: 24,
-            )
+            ),
           ],
         ),
       ),

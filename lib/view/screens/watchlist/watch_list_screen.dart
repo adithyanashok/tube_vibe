@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tube_vibe/provider/video_provider.dart';
-import 'package:tube_vibe/view/core/date_format.dart';
 import 'package:tube_vibe/view/screens/video_screen/video_screen.dart';
 import 'package:tube_vibe/view/widgets/text_widgets.dart';
 import 'package:tube_vibe/view/widgets/video_card.dart';
@@ -12,9 +11,13 @@ class WatchListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get the current user's ID
     final userId = FirebaseAuth.instance.currentUser?.uid;
+
+    // Fetch watchlist videos for the current user
     Provider.of<VideoUploadProvider>(context, listen: false)
         .fetchWatchListVideos(userId!);
+
     return Scaffold(
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
@@ -26,9 +29,11 @@ class WatchListScreen extends StatelessWidget {
       ),
       body: Consumer<VideoUploadProvider>(
         builder: (context, value, child) {
+          // Check if videos are still loading
           if (value.isLoading) {
             return const Center(child: CircularProgressIndicator());
           } else {
+            // Display the watchlist videos in a GridView
             return GridView.builder(
               padding: const EdgeInsets.only(left: 25, top: 10),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -43,6 +48,7 @@ class WatchListScreen extends StatelessWidget {
                         builder: (context) => VideoScreen(
                           videoUrl: video.videoUrl,
                           videoId: video.id,
+                          channelId: video.channelId,
                         ),
                       ),
                     );

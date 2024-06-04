@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tube_vibe/model/comment_model.dart';
-import 'package:tube_vibe/provider/comment_provider.dart';
 
 class CommentService {
   final db = FirebaseFirestore.instance;

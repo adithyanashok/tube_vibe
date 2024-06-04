@@ -1,7 +1,3 @@
-import '';
-import 'dart:io';
-
-import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:textfield_tags/textfield_tags.dart';
@@ -11,7 +7,9 @@ import 'package:tube_vibe/view/core/height_and_width.dart';
 import 'package:tube_vibe/view/widgets/tag_input.dart';
 import 'package:tube_vibe/view/widgets/text_fields.dart';
 import 'package:tube_vibe/view/widgets/text_widgets.dart';
+import 'package:flick_video_player/flick_video_player.dart';
 import 'package:video_player/video_player.dart';
+import 'dart:io';
 
 class UploadScreen extends StatefulWidget {
   final File thumbnail;
@@ -27,6 +25,7 @@ class _UploadScreenState extends State<UploadScreen> {
   final TextEditingController descController = TextEditingController();
   late StringTagController stringTagController;
   late FlickManager flickManager;
+
   @override
   void initState() {
     super.initState();
@@ -42,6 +41,7 @@ class _UploadScreenState extends State<UploadScreen> {
   @override
   void dispose() {
     super.dispose();
+    flickManager.dispose();
     stringTagController.dispose();
   }
 
@@ -68,7 +68,6 @@ class _UploadScreenState extends State<UploadScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       SizedBox(
-                        // width: 200,
                         height: 120,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(3),
@@ -80,7 +79,6 @@ class _UploadScreenState extends State<UploadScreen> {
                       ),
                       const Space(height: 40),
                       SizedBox(
-                        // width: 180,
                         height: 140,
                         child: FlickVideoPlayer(
                           flickManager: flickManager,
@@ -105,11 +103,11 @@ class _UploadScreenState extends State<UploadScreen> {
                   const Space(height: 20),
                   InkWell(
                     onTap: () {
-                      upload(
-                        titleController,
-                        descController,
-                        videoProvider,
+                      _upload(
+                        titleController.text,
+                        descController.text,
                         stringTagController,
+                        videoProvider,
                         context,
                       );
                     },
@@ -136,26 +134,48 @@ class _UploadScreenState extends State<UploadScreen> {
                   width: double.infinity,
                   height: double.infinity,
                   color: Colors.black.withOpacity(0.9),
-                  child: const Center(
-                    child: CircularProgressIndicator(),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: LinearProgressIndicator(
+                            value: value.uploadProgress / 100,
+                            backgroundColor: Colors.grey,
+                            color: Colors.red,
+                            minHeight: 12,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'Uploading: ${value.uploadProgress.toStringAsFixed(2)}%',
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 18),
+                        ),
+                      ],
+                    ),
                   ),
-                )
+                ),
             ],
           ),
         );
       },
     );
   }
-}
 
-void upload(titleController, descController, videoProvider, stringTagController,
-    context) {
-  if (titleController.text.isNotEmpty && descController.text.isNotEmpty) {
-    videoProvider.uploadVideo(
-      titleController.text,
-      descController.text,
-      stringTagController.getTags ?? [],
-      context,
-    );
+  void _upload(
+      String title,
+      String description,
+      StringTagController tagController,
+      VideoUploadProvider videoProvider,
+      BuildContext context) {
+    // Check if title and description are not empty
+    if (title.isNotEmpty && description.isNotEmpty) {
+      // Get tags from tag controller
+      List<String> tags = tagController.getTags ?? [];
+      // Call upload video method from provider
+      videoProvider.uploadVideo(title, description, tags, context);
+    }
   }
 }

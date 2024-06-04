@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:tube_vibe/model/user_model.dart';
 import 'package:tube_vibe/model/video_model.dart';
 import 'package:tube_vibe/view/core/date_format.dart';
@@ -10,13 +9,11 @@ import 'package:tube_vibe/view/widgets/text_widgets.dart';
 class VideoCard extends StatelessWidget {
   final VoidCallback onTap;
   final VideoModel videoModel;
-  final UserModel userModel;
 
   const VideoCard({
     super.key,
     required this.onTap,
     required this.videoModel,
-    required this.userModel,
   });
 
   @override
@@ -45,7 +42,7 @@ class VideoCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundImage: NetworkImage(userModel.profileImg),
+                backgroundImage: NetworkImage(videoModel.channelProfile),
               ),
               const Space(width: 8),
               Column(
@@ -62,7 +59,7 @@ class VideoCard extends StatelessWidget {
                     ),
                   ),
                   CustomText(
-                    text: userModel.name,
+                    text: videoModel.channelName,
                     color: Colors.grey,
                     fontWeight: FontWeight.w400,
                     fontSize: 12,
@@ -70,8 +67,8 @@ class VideoCard extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      const CustomText(
-                        text: "32k views",
+                      CustomText(
+                        text: "${videoModel.views} views",
                         color: Colors.grey,
                         fontWeight: FontWeight.w400,
                         fontSize: 12,
@@ -240,8 +237,8 @@ class SmallCard extends StatelessWidget {
             height: 90,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                image,
+              child: CachedNetworkImage(
+                imageUrl: image,
                 fit: BoxFit.cover,
               ),
             ),
@@ -266,13 +263,13 @@ class SmallCard extends StatelessWidget {
                 fontSize: 12,
                 maxLines: 2,
               ),
-              const Space(width: 5),
+              const Space(width: 3),
               const Icon(
                 Icons.circle,
                 size: 7,
                 color: Colors.grey,
               ),
-              const Space(width: 5),
+              const Space(width: 3),
               CustomText(
                 text: formatDateTimeAgo(date),
                 color: Colors.grey,

@@ -1,16 +1,17 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:developer';
-
-import '';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:tube_vibe/database/comment_service.dart';
+
+import 'package:tube_vibe/service/comment_service.dart';
 import 'package:tube_vibe/model/comment_model.dart';
 
 class CommentProvider with ChangeNotifier {
-  final commentService = CommentService();
+  CommentService commentService;
   String _error = '';
   List<CommentModel> _comments = [];
+  CommentProvider(this.commentService);
 
   // Getter
   String get error => _error;

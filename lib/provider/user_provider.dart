@@ -1,28 +1,32 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
-
-import 'package:image_picker/image_picker.dart';
-import 'package:tube_vibe/database/video_service.dart';
-
-import '';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:tube_vibe/database/user_service.dart';
+import 'package:image_picker/image_picker.dart';
+
+import 'package:tube_vibe/service/user_service.dart';
+import 'package:tube_vibe/service/video_service.dart';
 import 'package:tube_vibe/model/user_model.dart';
 import 'package:tube_vibe/model/video_model.dart';
-import 'package:tube_vibe/view/screens/login_screen.dart';
+import 'package:tube_vibe/view/core/snackbar.dart';
+import 'package:tube_vibe/view/screens/login/login_screen.dart';
 import 'package:tube_vibe/view/screens/main_screen.dart';
 
 class UserProvider with ChangeNotifier {
-  UserService userService = UserService();
+  UserService userService;
+
   VideoService videoService = VideoService();
+  UserProvider(this.userService);
+
   final picker = ImagePicker();
 
   bool _isLoading = false;
   String _error = '';
   UserModel _user = UserModel(name: '', email: '', subscribers: []);
-  List _userModels = [];
+  final List _userModels = [];
+  List<UserModel> _searchList = [];
   bool _pickedprofile = false;
   File? _profileFile;
 
@@ -30,6 +34,7 @@ class UserProvider with ChangeNotifier {
   String get error => _error;
   UserModel get user => _user;
   List get userModels => _userModels;
+  List<UserModel> get searchList => _searchList;
   bool get pickedprofile => _pickedprofile;
   File? get profileFile => _profileFile;
   // Signup
@@ -127,19 +132,21 @@ class UserProvider with ChangeNotifier {
       );
     } on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-email') {
-        _error = 'Email is invalid';
+        showSnackBar(context, "Email is invalid");
         _isLoading = false;
         notifyListeners();
       } else if (e.code == 'user-not-found') {
-        _error = 'User not found';
+        showSnackBar(context, "User not found");
+
         _isLoading = false;
         notifyListeners();
       } else if (e.code == 'wrong-password') {
-        _error = 'Wrong password';
+        showSnackBar(context, "Wrong password");
         _isLoading = false;
         notifyListeners();
       } else {
-        _error = 'Wrong password or email';
+        showSnackBar(context, "Wrong password or email");
+
         _isLoading = false;
         notifyListeners();
       }
@@ -147,13 +154,21 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<void> getUser(userId) async {
+    _isLoading = true;
+
     _user = await userService.getUser(userId);
+    _isLoading = false;
     notifyListeners();
   }
 
-  Future<void> getUsersName(List<VideoModel> userId) async {
-    _userModels = await userService.getUsersName(userId);
-    _isLoading = false;
+  // Future<void> getUsersName(List<VideoModel> userId) async {
+  //   // _userModels = await userService.getUsersName(userId);
+  //   _isLoading = false;
+  //   notifyListeners();
+  // }
+
+  Future<void> searchUsers(String query) async {
+    _searchList = await userService.searchUsers(query);
     notifyListeners();
   }
 
@@ -209,15 +224,22 @@ class UserProvider with ChangeNotifier {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
+      _isLoading = true;
+      notifyListeners();
+
       File imageFile = File(pickedFile.path);
       String profileFileName =
           'profile/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      String profileUrl =
-          await videoService.uploadFile(imageFile, profileFileName);
+      String profileUrl = await videoService.uploadFile(
+        imageFile,
+        profileFileName,
+        (p0) {},
+      );
 
       await userService.updateProfilePic(userId, profileUrl);
       getUser(userId);
       _pickedprofile = true;
+      _isLoading = false;
       notifyListeners();
     }
   }

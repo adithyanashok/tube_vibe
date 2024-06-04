@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:tube_vibe/model/user_model.dart';
 import 'package:tube_vibe/view/screens/main_screen.dart';
 
-import '';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -15,12 +14,32 @@ import 'package:tube_vibe/model/video_model.dart';
 class VideoService {
   final db = FirebaseFirestore.instance;
   // File uploading
-  Future<String> uploadFile(File file, String path) async {
-    // upload file
-    TaskSnapshot snapshot =
-        await FirebaseStorage.instance.ref(path).putFile(file);
-    // Returning the url
-    return await snapshot.ref.getDownloadURL();
+  Future<String> uploadFile(
+      File file, String path, Function(double) onProgress) async {
+    try {
+      // Create a reference to the Firebase Storage location
+      Reference storageReference = FirebaseStorage.instance.ref().child(path);
+
+      // Create an upload task
+      UploadTask uploadTask = storageReference.putFile(file);
+
+      // Track the progress
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        // Calculate the progress percentage
+        double progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        onProgress(progress);
+      });
+
+      // Wait until the upload completes
+      await uploadTask.whenComplete(() => null);
+
+      // Get the download URL
+      String downloadUrl = await storageReference.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      throw Exception('Upload failed: $e');
+    }
   }
 
   Future<File?> compressVideo(File file) async {
@@ -106,7 +125,9 @@ class VideoService {
         likes: [],
         date: '',
         channelId: '',
+        channelName: '',
         videoThumbnail: '',
+        channelProfile: '',
         videoUrl: '',
         tags: [],
       );
@@ -283,11 +304,26 @@ class VideoService {
   Future<void> deleteVideo(String docId, String userId, context) async {
     try {
       await db.collection('videos').doc(docId).delete();
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context) => const MainScreen(),
         ),
+        (route) => false,
       );
+    } catch (e) {
+      debugPrint("Error fetching watchlist videos: $e");
+    }
+  }
+
+  Future<void> addViews(String videoId) async {
+    try {
+      final docRef = db.collection('videos').doc(videoId);
+      final docSnap = await docRef.get();
+      final video = VideoModel.fromMap(docSnap.data()!);
+
+      await docRef.update({
+        'views': video.views + 1,
+      });
     } catch (e) {
       debugPrint("Error fetching watchlist videos: $e");
     }

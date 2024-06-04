@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:tube_vibe/view/core/colors.dart';
-import 'package:tube_vibe/view/screens/login_screen.dart';
+import 'package:tube_vibe/view/screens/login/login_screen.dart';
 import 'package:tube_vibe/view/screens/main_screen.dart';
 import 'package:tube_vibe/view/widgets/text_widgets.dart';
 

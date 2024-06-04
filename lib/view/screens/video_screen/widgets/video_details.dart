@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:tube_vibe/view/core/height_and_width.dart';
 import 'package:tube_vibe/view/widgets/text_widgets.dart';
 
 class VideoDetails extends StatelessWidget {
   final String title;
   final int views;
   final String date;
+
   const VideoDetails({
     super.key,
     required this.title,
@@ -16,6 +16,7 @@ class VideoDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
           width: MediaQuery.of(context).size.width,
@@ -36,13 +37,13 @@ class VideoDetails extends StatelessWidget {
               fontSize: 13,
               maxLines: 2,
             ),
-            const Space(width: 5),
+            const SizedBox(width: 5),
             const Icon(
               Icons.circle,
               size: 7,
               color: Colors.grey,
             ),
-            const Space(width: 5),
+            const SizedBox(width: 5),
             CustomText(
               text: date,
               color: Colors.grey,

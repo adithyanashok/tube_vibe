@@ -11,6 +11,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Fetch videos on the initial build
     Provider.of<VideoUploadProvider>(context, listen: false).fetchVideos();
 
     return Scaffold(
@@ -18,32 +19,32 @@ class HomeScreen extends StatelessWidget {
         title: const LogoText(),
       ),
       body: Consumer<VideoUploadProvider>(
-        builder: (context, value, child) {
-          if (value.isLoading) {
+        builder: (context, videoProvider, child) {
+          // Display a loading indicator while videos are being fetched
+          if (videoProvider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           } else {
             return RefreshIndicator(
               onRefresh: () async {
-                await Provider.of<VideoUploadProvider>(context, listen: false)
-                    .fetchVideos();
-
-                value.videos.shuffle();
+                await videoProvider.fetchVideos();
+                videoProvider.videos
+                    .shuffle(); // Randomize video order on refresh
               },
               child: ListView.separated(
-                itemCount: value.videos.length,
+                itemCount: videoProvider.videos.length,
                 padding: const EdgeInsets.all(10),
                 itemBuilder: (context, index) {
-                  final video = value.videos[index];
+                  final video = videoProvider.videos[index];
 
                   return VideoCard(
                     videoModel: video,
-                    userModel: value.userModels[index],
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => VideoScreen(
                             videoUrl: video.videoUrl,
                             videoId: video.id,
+                            channelId: video.channelId,
                           ),
                         ),
                       );
