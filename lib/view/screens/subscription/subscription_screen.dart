@@ -71,9 +71,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 ),
                 Column(
                   children: value.subscribedVideos.map((video) {
-                    final user = value.subscribedUsers.firstWhere(
-                      (user) => user.id == video.channelId,
-                    );
                     return Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: VideoCard(

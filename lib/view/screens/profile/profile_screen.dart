@@ -36,10 +36,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-
-    // });
-
     return Consumer<UserProvider>(
       builder: (context, userProvider, child) {
         return Scaffold(
@@ -67,13 +63,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: SizedBox(
                             width: 130,
                             height: 130,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(100),
-                              child: CachedNetworkImage(
-                                imageUrl: userProvider.user.profileImg,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
+                            child: userProvider.isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : ClipRRect(
+                                    borderRadius: BorderRadius.circular(100),
+                                    child: CachedNetworkImage(
+                                      imageUrl: userProvider.user.profileImg,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
@@ -117,17 +121,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           children: [
                             VideosSection(
                               title: "Latest Videos",
-                              videoProvider: videoProvider,
+                              videoModel: videoProvider.latestVideos,
                             ),
-                            const Space(height: 5),
                             VideosSection(
                               title: "Most Popular",
-                              videoProvider: videoProvider,
+                              videoModel: videoProvider.mostViews,
                             ),
-                            const Space(height: 5),
                             VideosSection(
                               title: "Most Liked",
-                              videoProvider: videoProvider,
+                              videoModel: videoProvider.mostLikes,
                             ),
                           ],
                         )

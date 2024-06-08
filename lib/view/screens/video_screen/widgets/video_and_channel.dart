@@ -27,7 +27,6 @@ class VideoAndChannelSection extends StatelessWidget {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     final videoProvider =
         Provider.of<VideoUploadProvider>(context, listen: false);
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

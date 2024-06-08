@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:tube_vibe/model/comment_model.dart';
 import 'package:tube_vibe/model/video_model.dart';
 import 'package:tube_vibe/provider/comment_provider.dart';
+import 'package:tube_vibe/provider/user_provider.dart';
 import 'package:tube_vibe/view/core/colors.dart';
 import 'package:tube_vibe/view/widgets/comment_widget.dart';
 import 'package:tube_vibe/view/widgets/text_fields.dart';
@@ -22,11 +23,12 @@ class VideoCommentSection extends StatelessWidget {
     final TextEditingController controller = TextEditingController();
     final commentProvider =
         Provider.of<CommentProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     final user = FirebaseAuth.instance.currentUser;
 
     return InkWell(
-      onTap: () =>
-          _showCommentBottomSheet(context, controller, user, commentProvider),
+      onTap: () => _showCommentBottomSheet(
+          context, controller, user, commentProvider, userProvider),
       child: Consumer<CommentProvider>(
         builder: (context, value, child) {
           return Container(
@@ -60,10 +62,12 @@ class VideoCommentSection extends StatelessWidget {
   }
 
   Future<void> _showCommentBottomSheet(
-      BuildContext context,
-      TextEditingController controller,
-      User? user,
-      CommentProvider commentProvider) async {
+    BuildContext context,
+    TextEditingController controller,
+    User? user,
+    CommentProvider commentProvider,
+    UserProvider userProvider,
+  ) async {
     showModalBottomSheet(
       backgroundColor: primaryBlack,
       isScrollControlled: true,
@@ -91,8 +95,8 @@ class VideoCommentSection extends StatelessWidget {
                     if (controller.text.isNotEmpty) {
                       await commentProvider.addComment(
                         CommentModel(
-                          name: user?.displayName ?? "",
-                          profile: user?.photoURL ?? "",
+                          name: userProvider.currentUser.name,
+                          profile: userProvider.currentUser.profileImg,
                           date: DateTime.now().toIso8601String(),
                           likes: [],
                           userId: user?.uid ?? "",

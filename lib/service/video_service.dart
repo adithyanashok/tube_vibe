@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:tube_vibe/model/user_model.dart';
 import 'package:tube_vibe/view/screens/main_screen.dart';
@@ -108,6 +106,7 @@ class VideoService {
     for (var docSnapshot in querySnapshot.docs) {
       final videoData = docSnapshot.data();
       final videos = VideoModel.fromMap(videoData);
+
       videosList.add(videos);
     }
     return videosList;
@@ -138,7 +137,6 @@ class VideoService {
   Future<List<VideoModel>> searchVideos(String query) async {
     // Empty VideoModel list
     final List<VideoModel> videosList = [];
-    log("vid serv log: $query");
 
     // Fetch video from db
     final results = await FirebaseFirestore.instance.collection('videos').get();

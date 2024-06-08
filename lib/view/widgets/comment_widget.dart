@@ -35,6 +35,7 @@ class CommentWidget extends StatelessWidget {
               child: Image.network(
                 comment.profile,
                 width: 40,
+                height: 40,
                 fit: BoxFit.cover,
               ),
             ),

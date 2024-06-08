@@ -1,6 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-// video_upload_provider.dart
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,7 +14,7 @@ import 'package:tube_vibe/view/screens/video_screen/video_screen.dart';
 class VideoUploadProvider with ChangeNotifier {
   VideoService videoService;
   // Variables
-  final picker = ImagePicker();
+  final _picker = ImagePicker();
   final userService = UserService();
   // Boolean Values
   bool _isUploading = false;
@@ -44,8 +41,8 @@ class VideoUploadProvider with ChangeNotifier {
   double _uploadProgress = 0.0;
 
   String? _error;
-  File? _videoFile;
-  File? _thumbnailFile;
+  File _videoFile = File('');
+  File _thumbnailFile = File('');
   VideoUploadProvider(
     this.videoService,
   );
@@ -82,8 +79,8 @@ class VideoUploadProvider with ChangeNotifier {
   List<String> get watchlistIds => _watchlistIds;
   VideoModel get video => _video;
   // Files
-  File? get videoFile => _videoFile;
-  File? get thumbnailFile => _thumbnailFile;
+  File get videoFile => _videoFile;
+  File get thumbnailFile => _thumbnailFile;
   // Users Lists
   // List<UserModel> get userModels => _userModels;
   // List<UserModel> get reletedVideosUserModels => _reletedVideosUserModels;
@@ -91,9 +88,9 @@ class VideoUploadProvider with ChangeNotifier {
 
   double get uploadProgress => _uploadProgress;
 
-  // Pick Video
+  // // Pick Video
   Future<void> pickVideo() async {
-    final pickedFile = await picker.pickVideo(source: ImageSource.gallery);
+    final pickedFile = await _picker.pickVideo(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       File videoFile = File(pickedFile.path);
@@ -105,7 +102,7 @@ class VideoUploadProvider with ChangeNotifier {
   }
 
   Future<void> pickThumbnail() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       File imageFile = File(pickedFile.path);
@@ -129,11 +126,11 @@ class VideoUploadProvider with ChangeNotifier {
     try {
       // Upload video
       String videoUrl = await videoService.uploadFile(
-          videoFile!, videoFileName, _updateUploadProgress);
+          videoFile, videoFileName, _updateUploadProgress);
 
       // Compress and upload thumbnail
       File compressedThumbnail =
-          await videoService.compressImage(thumbnailFile!);
+          await videoService.compressImage(thumbnailFile);
       String thumbnailUrl = await videoService.uploadFile(
           compressedThumbnail, thumbnailFileName, (double progress) {});
 
@@ -188,8 +185,6 @@ class VideoUploadProvider with ChangeNotifier {
     _isLoading = true;
 
     _videos = await videoService.fetchVideos();
-    // _userModels = await userService.getUsersName(_videos);
-
     _isLoading = false;
     notifyListeners();
   }
@@ -198,23 +193,22 @@ class VideoUploadProvider with ChangeNotifier {
     _isLoading = true;
 
     _channelVideos = await videoService.fetchMyVideos(userId);
-    _latestVideos = List.from(_videos)
+    _latestVideos = List.from(_channelVideos)
       ..sort(
           (a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
-    // _userModels = await userService.getUsersName(_videos);
     // Sort videos by most likes
-    _mostLikes = List.from(_videos)
+    _mostLikes = List.from(_channelVideos)
       ..sort((a, b) => b.likes.length.compareTo(a.likes.length));
 
     // Sort videos by most views
-    _mostViews = List.from(_videos)..sort((a, b) => b.views.compareTo(a.views));
+    _mostViews = List.from(_channelVideos)
+      ..sort((a, b) => b.views.compareTo(a.views));
 
     _isLoading = false;
     notifyListeners();
   }
 
   Future<void> fetchVideoById(String docId) async {
-    log("Fetching video by ID: $docId");
     _isLoading = true;
 
     _video = await videoService.fetchVideoById(docId);
@@ -268,7 +262,9 @@ class VideoUploadProvider with ChangeNotifier {
   Future<void> getSubscribedVideos(String userId) async {
     _isLoading = true;
     final videos = await videoService.getSubscribedVideos(userId);
-    _subscribedVideos = videos[0];
+    _subscribedVideos = List.from(videos[0])
+      ..sort((a, b) => b.date.compareTo(a.date));
+
     _subscribedUsers = videos[1];
     _isLoading = false;
     notifyListeners();
@@ -305,5 +301,13 @@ class VideoUploadProvider with ChangeNotifier {
 
   Future<void> clearSearchList() async {
     _searchList = [];
+  }
+
+  Future<void> clearFiles() async {
+    _videoFile = File('');
+    _thumbnailFile = File('');
+    _pickedVideo = false;
+    _pickedThumbnail = false;
+    notifyListeners();
   }
 }

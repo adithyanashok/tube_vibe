@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,7 +8,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:tube_vibe/service/user_service.dart';
 import 'package:tube_vibe/service/video_service.dart';
 import 'package:tube_vibe/model/user_model.dart';
-import 'package:tube_vibe/model/video_model.dart';
 import 'package:tube_vibe/view/core/snackbar.dart';
 import 'package:tube_vibe/view/screens/login/login_screen.dart';
 import 'package:tube_vibe/view/screens/main_screen.dart';
@@ -25,6 +23,7 @@ class UserProvider with ChangeNotifier {
   bool _isLoading = false;
   String _error = '';
   UserModel _user = UserModel(name: '', email: '', subscribers: []);
+  UserModel _currentUser = UserModel(name: '', email: '', subscribers: []);
   final List _userModels = [];
   List<UserModel> _searchList = [];
   bool _pickedprofile = false;
@@ -33,6 +32,7 @@ class UserProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String get error => _error;
   UserModel get user => _user;
+  UserModel get currentUser => _currentUser;
   List get userModels => _userModels;
   List<UserModel> get searchList => _searchList;
   bool get pickedprofile => _pickedprofile;
@@ -65,10 +65,11 @@ class UserProvider with ChangeNotifier {
                 .update({'id': value.user?.uid});
             _isLoading = false;
             notifyListeners();
-            Navigator.of(context).pushReplacement(
+            Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
                 builder: (context) => const MainScreen(),
               ),
+              (route) => false,
             );
           }
         },
@@ -104,7 +105,6 @@ class UserProvider with ChangeNotifier {
     try {
       // Initialize Firebase Authentication
       final FirebaseAuth auth = FirebaseAuth.instance;
-      // final FirebaseFirestore db = FirebaseFirestore.instance;
       // Attempt to sign in with the provided email and password
       final credential = await auth.signInWithEmailAndPassword(
         email: email,
@@ -118,17 +118,16 @@ class UserProvider with ChangeNotifier {
       if (user == null) {
         _isLoading = true;
         notifyListeners();
-        // Show a snackbar indicating that the user was not found
-        // snackBar(context: context, msg: "User not found");
       }
       _error = '';
       _isLoading = false;
       notifyListeners();
       // Navigate to the MainPage on successful login
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context) => const MainScreen(),
         ),
+        (route) => false,
       );
     } on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-email') {
@@ -161,11 +160,10 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Future<void> getUsersName(List<VideoModel> userId) async {
-  //   // _userModels = await userService.getUsersName(userId);
-  //   _isLoading = false;
-  //   notifyListeners();
-  // }
+  Future<void> getCurrentUser(userId) async {
+    _currentUser = await userService.getUser(userId);
+    notifyListeners();
+  }
 
   Future<void> searchUsers(String query) async {
     _searchList = await userService.searchUsers(query);
@@ -208,7 +206,6 @@ class UserProvider with ChangeNotifier {
           getUser(userId);
         }
       }
-      // getUser(currentUserId);
     } catch (e) {
       debugPrint(e.toString());
     }
@@ -243,15 +240,4 @@ class UserProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-
-  // Future<void> updateProfilePic(String userId) async {
-  //   String profileFileName =
-  //       'profile/${DateTime.now().millisecondsSinceEpoch}.jpg';
-  //   String profileUrl =
-  //       await videoService.uploadFile(profileFile!, profileFileName);
-
-  //   await userService.updateProfilePic(userId, profileUrl);
-  //   getUser(userId);
-  //   notifyListeners();
-  // }
 }

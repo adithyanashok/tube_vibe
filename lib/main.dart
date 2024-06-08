@@ -13,6 +13,7 @@ import 'package:tube_vibe/view/screens/login/login_screen.dart';
 import 'package:tube_vibe/view/screens/main_screen.dart';
 import 'package:tube_vibe/view/screens/signup/signup_screen.dart';
 import 'package:tube_vibe/view/screens/splash/splash_screen.dart';
+import 'package:tube_vibe/view/screens/videos/videos_screen.dart';
 import 'package:tube_vibe/view/screens/watchlist/watch_list_screen.dart';
 
 void main() async {
@@ -51,6 +52,7 @@ class MyApp extends StatelessWidget {
           'signup': (context) => SignupScreen(),
           'login': (context) => LoginScreen(),
           "watch-list": (context) => const WatchListScreen(),
+          "videos": (context) => const VideosScreen(),
         },
         home: const SplashScreen(),
       ),

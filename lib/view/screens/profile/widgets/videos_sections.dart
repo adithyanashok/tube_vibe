@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tube_vibe/provider/video_provider.dart';
+import 'package:tube_vibe/model/video_model.dart';
 import 'package:tube_vibe/view/core/height_and_width.dart';
 import 'package:tube_vibe/view/screens/video_screen/video_screen.dart';
 import 'package:tube_vibe/view/widgets/text_widgets.dart';
@@ -7,11 +7,11 @@ import 'package:tube_vibe/view/widgets/video_card.dart';
 
 class VideosSection extends StatelessWidget {
   final String title;
-  final VideoUploadProvider videoProvider;
+  final List<VideoModel> videoModel;
   const VideosSection({
     super.key,
     required this.title,
-    required this.videoProvider,
+    required this.videoModel,
   });
 
   @override
@@ -40,11 +40,11 @@ class VideosSection extends StatelessWidget {
         ),
         const Space(height: 5),
         SizedBox(
-          height: 200,
+          height: 165,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemBuilder: (context, index) {
-              final video = videoProvider.latestVideos[index];
+              final video = videoModel[index];
               return SmallCard(
                 onTap: () {
                   Navigator.of(context).push(
@@ -59,12 +59,12 @@ class VideosSection extends StatelessWidget {
                 },
                 image: video.videoThumbnail,
                 title: video.videoTitle,
-                views: '${video.views} views',
+                views: '${video.views}',
                 date: video.date,
               );
             },
             separatorBuilder: (context, index) => const Space(width: 10),
-            itemCount: videoProvider.latestVideos.length,
+            itemCount: videoModel.length,
           ),
         ),
       ],

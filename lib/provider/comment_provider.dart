@@ -1,6 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -50,7 +47,6 @@ class CommentProvider with ChangeNotifier {
       final db = FirebaseFirestore.instance;
 
       if (docSnapshot.exists) {
-        log("message+++++++++++++++++++++++++++++++++++++");
         // Check if user already liked the video
         final likedByUser =
             docSnapshot.data()!['likes']?.contains(userId) ?? false;

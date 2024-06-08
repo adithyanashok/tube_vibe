@@ -15,8 +15,6 @@ class SplashScreen extends StatelessWidget {
     Future.delayed(
       const Duration(seconds: 3),
       () async {
-        // Authenticate the user using LocalAuthApi (authentication logic not shown)
-
         // Check if the user is authenticated
         if (user != null) {
           // If the user is there, navigate to a home

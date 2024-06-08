@@ -1,9 +1,7 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:tube_vibe/model/user_model.dart';
-import 'package:tube_vibe/model/video_model.dart';
 
 class UserService {
   final db = FirebaseFirestore.instance;
@@ -23,23 +21,6 @@ class UserService {
       return UserModel(name: "", email: '');
     }
   }
-
-  // Future<UserModel> getUser(String userId) async {
-  //   try {
-  //     final docSnap = await db.collection('users').doc(userId).get();
-
-  //     final userData = docSnap.data();
-  //     if (userData != null) {
-  //       final user = UserModel.fromMap(userData);
-  //       return user;
-  //     } else {
-  //       return UserModel(name: "", email: '');
-  //     }
-  //   } catch (e) {
-  //     debugPrint(e.toString());
-  //     return UserModel(name: "", email: '');
-  //   }
-  // }
 
   Future<List<UserModel>> searchUsers(String query) async {
     // Empty VideoModel list
@@ -71,10 +52,20 @@ class UserService {
           .collection('videos')
           .where('channelId', isEqualTo: userId)
           .get();
+      final commentSnap = await db
+          .collection('comments')
+          .where('userId', isEqualTo: userId)
+          .get();
+      await FirebaseAuth.instance.currentUser?.updateDisplayName(newName);
 
       for (var videos in videosSnap.docs) {
         await db.collection('videos').doc(videos.id).update({
           "channelName": newName,
+        });
+      }
+      for (var comments in commentSnap.docs) {
+        await db.collection('comments').doc(comments.id).update({
+          "name": newName,
         });
       }
     } catch (e) {
@@ -92,9 +83,21 @@ class UserService {
           .where('channelId', isEqualTo: userId)
           .get();
 
+      final commentSnap = await db
+          .collection('comments')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      await FirebaseAuth.instance.currentUser?.updatePhotoURL(url);
+
       for (var videos in videosSnap.docs) {
         await db.collection('videos').doc(videos.id).update({
           "channelProfile": url,
+        });
+      }
+      for (var comments in commentSnap.docs) {
+        await db.collection('comments').doc(comments.id).update({
+          "profile": url,
         });
       }
     } catch (e) {

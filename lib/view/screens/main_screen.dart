@@ -62,6 +62,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     context.read<UserProvider>().getUser(userId);
+    context.read<UserProvider>().getCurrentUser(userId);
     context.read<VideoUploadProvider>().fetchMyVideos(userId!);
     final videoUploadProvider =
         Provider.of<VideoUploadProvider>(context, listen: false);
@@ -118,6 +119,7 @@ class _MainScreenState extends State<MainScreen> {
       BuildContext context, VideoUploadProvider videoUploadProvider) {
     return showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => SimpleDialog(
         backgroundColor: primaryBlack,
         surfaceTintColor: primaryBlack,
@@ -165,7 +167,6 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ],
                 ),
-                // Button to continue to upload screen
                 CustomElevatedButton(
                   backgroundColor: value.pickedThumbnail && value.pickedVideo
                       ? primaryRed
@@ -174,20 +175,21 @@ class _MainScreenState extends State<MainScreen> {
                   borderRadius: 8,
                   height: 36,
                   onTap: () {
-                    if (videoUploadProvider.videoFile != null &&
-                        videoUploadProvider.thumbnailFile != null) {
-                      Navigator.pop(context);
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => UploadScreen(
-                            thumbnail: videoUploadProvider.thumbnailFile!,
-                            video: videoUploadProvider.videoFile!,
-                          ),
-                        ),
-                      );
-                    }
+                    Navigator.pop(context);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const UploadScreen(),
+                      ),
+                    );
                   },
                 ),
+                TextButton(
+                  onPressed: () {
+                    videoUploadProvider.clearFiles();
+                    Navigator.pop(context);
+                  },
+                  child: const CustomText(text: "Cancel"),
+                )
               ],
             );
           }),

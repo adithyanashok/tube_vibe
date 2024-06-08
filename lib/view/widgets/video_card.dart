@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:tube_vibe/model/user_model.dart';
 import 'package:tube_vibe/model/video_model.dart';
 import 'package:tube_vibe/view/core/date_format.dart';
 import 'package:tube_vibe/view/core/height_and_width.dart';
@@ -121,7 +120,7 @@ class VideoHorizontalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       onTap: () => onTap(),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,7 +225,7 @@ class SmallCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       onTap: () => onTap(),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
